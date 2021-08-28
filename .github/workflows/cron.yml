@@ -21,4 +21,4 @@ jobs:
     steps:
       # Runs a single command using the runners shell
       - name: Calls settler
-        run: curl https://keepers.cap.finance/api/settler?chain=rinkeby
+        run: curl https://keepers-psi.vercel.app/api/settler?chain=rinkeby
