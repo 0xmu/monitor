@@ -7,15 +7,15 @@ async function main(req, res) {
 	//const chain = 'rinkeby';
 	const chain = req.query.chain; // rinkeby, mainnet, etc.
 
-	if (!chain || !DATA[chain]) return res.json({success: false, message: 'chain invalid'});
+	if (!chain || !DATA[chain]) return res.status(403).json({success: false, message: 'chain invalid'});
 
 	const pkey = process.env[`SETTLER_PKEY_${chain.toUpperCase()}`];
 
-	if (!pkey) return res.json({success: false, message: 'no pkey'});
+	if (!pkey) return res.status(403).json({success: false, message: 'no pkey'});
 
 	const trading = process.env[`TRADING_CONTRACT_${chain.toUpperCase()}`];
 
-	if (!trading) return res.json({success: false, message: 'no trading contract'});
+	if (!trading) return res.status(403).json({success: false, message: 'no trading contract'});
 
 	const provider = new ethers.providers.JsonRpcProvider(DATA[chain]['network']);
 	const walletWithProvider = new ethers.Wallet(pkey, provider);
