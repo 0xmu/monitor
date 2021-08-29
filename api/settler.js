@@ -13,10 +13,14 @@ async function main(req, res) {
 
 	if (!pkey) return res.json({success: false, message: 'no pkey'});
 
+	const trading = process.env[`TRADING_CONTRACT_${chain.toUpperCase()}`];
+
+	if (!trading) return res.json({success: false, message: 'no trading contract'});
+
 	const provider = new ethers.providers.JsonRpcProvider(DATA[chain]['network']);
 	const walletWithProvider = new ethers.Wallet(pkey, provider);
 
-	const contract = new ethers.Contract(DATA[chain]['trading'], SETTLER_ABI, walletWithProvider);
+	const contract = new ethers.Contract(trading, SETTLER_ABI, walletWithProvider);
 
 	let settleTheseIds = await contract.checkPositionsToSettle();
 	console.log('settleTheseIds:', settleTheseIds);
