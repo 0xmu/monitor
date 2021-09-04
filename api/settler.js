@@ -52,11 +52,22 @@ async function main(req, res) {
 
 	let settleTheseIds = Object.keys(settle_these_ids);
 
-	//console.log('settleTheseIds', settleTheseIds);
-
+	// Check if they can be settled
 	if (settleTheseIds.length > 0) {
-		await contract.settlePositions(settleTheseIds);
-		console.log('Settled Ids', settleTheseIds);
+		const canBeSettled = await contract.canSettlePositions(settleTheseIds);
+		if (canBeSettled.length > 0) {
+			// Go through it and make sure there are non zeros
+			let idsToActuallySettle = [];
+			for (const id of canBeSettled) {
+				if (!id || id.toNumber() == 0) continue;
+				idsToActuallySettle.push(id);
+			}
+			if (idsToActuallySettle.length > 0) {
+				await contract.settlePositions(idsToActuallySettle);
+				console.log('Settled Ids', idsToActuallySettle);
+				return returnRes(res, 200, {success: true, settled: idsToActuallySettle}, req.query.isLocal);
+			}
+		}
 	}
 
 	return returnRes(res, 200, {success: true}, req.query.isLocal);
