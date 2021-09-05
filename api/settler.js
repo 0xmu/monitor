@@ -52,6 +52,7 @@ async function main(req, res) {
 
 	let settleTheseIds = Object.keys(settle_these_ids);
 
+	console.log('settleTheseIds', settleTheseIds);
 	// Check if they can be settled
 	if (settleTheseIds.length > 0) {
 		const canBeSettled = await contract.canSettlePositions(settleTheseIds);
@@ -62,6 +63,7 @@ async function main(req, res) {
 				if (!id || id.toNumber() == 0) continue;
 				idsToActuallySettle.push(id);
 			}
+			console.log('idsToActuallySettle', idsToActuallySettle);
 			if (idsToActuallySettle.length > 0) {
 				await contract.settlePositions(idsToActuallySettle);
 				console.log('Settled Ids', idsToActuallySettle);

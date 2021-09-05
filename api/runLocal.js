@@ -1,3 +1,5 @@
-const main = require('./settler.js');
+const settle = require('./settler.js');
+const liquidate = require('./liquidator.js');
 
-main({query: {isLocal: true, chain: 'localhost'}});
+//settle({query: {isLocal: true, chain: 'rinkeby'}});
+liquidate({query: {isLocal: true, chain: 'localhost'}});
