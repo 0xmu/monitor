@@ -29,6 +29,10 @@ async function main(req, res) {
 
 	const contract = new ethers.Contract(trading, LIQUIDATOR_ABI, walletWithProvider);
 
+	// LOCAL TEST
+
+	//await contract.liquidatePositions([ '3', '4', '13', '18' ], {gasLimit: 2000000});
+	//return;
 
 	// determine which positions to liquidate
 
@@ -42,6 +46,8 @@ async function main(req, res) {
 	const filter_close = contract.filters.ClosePosition(null, null, 1);
 	const events_close = await contract.queryFilter(filter_close, -1000000);
 
+	//console.log('events_close', events_close);
+
 	let full_close_ids = {};
 	for (const ev of events_close) {
 		let args = ev.args;
@@ -51,6 +57,8 @@ async function main(req, res) {
 	const filter_settled = contract.filters.NewPositionSettled();
 	const events_settled = await contract.queryFilter(filter_settled, -1000000); // about 6 months
 
+	//console.log('events_settled', events_settled);
+
 	let open_position_ids = {};
 	for (let ev of events_settled) {
 		let args = ev.args;
@@ -58,6 +66,8 @@ async function main(req, res) {
 	}
 
 	open_position_ids = Object.keys(open_position_ids);
+
+	console.log('open_position_ids', open_position_ids);
 
 	let batches = [];
 
@@ -71,42 +81,74 @@ async function main(req, res) {
 		batches[i].push(id);
 	}
 
+	console.log('batches', batches);
 
-	let positions = [];
+	let positions = {};
+	let j = 0;
 	for (const batch of batches) {
 		const _positions = await contract.getPositions(batch);
-		positions = positions.concat(_positions);
+		for (const p of _positions) {
+			positions[batch[i]] = p;
+			i++;
+		}
+		j = 0;
 	}
+
+	console.log('positions', positions);
 
 	// positions contains open positions with up to date data. now get products and product current price
 
-	let products = {}; // product id => product with price
+	let product_prices = {}; // product id => product price
+	let product_info = {}; // product id => product info
 	let liquidate_position_ids = [];
-	for (const p of positions) {
-		if (!products[p.productId]) {
+	for (const positionId in positions) {
+		
+		const p = positions[positionId];
+		if (!p.productId.toNumber()) continue;
+
+		if (!product_prices[p.productId]) {
 			let productInfo = await contract.getProduct(p.productId);
-			productInfo.price = await contract.getLatestPrice(null, p.productId);
-			products[p.productId] = productInfo;
-		}
-		// Calculate liq price for each position
-		let pinfo = products[p.productId];
-		let price = pinfo.price;
-		let liquidationPrice;
-		if (p.isLong) {
-			liquidationPrice = price - price * 0.8 / (p.leverage / 10**8);
-		} else {
-			liquidationPrice = price + price * 0.8 / (p.leverage / 10**8);
+			let price = await contract.getLatestPrice(ADDRESS_ZERO, p.productId);
+			product_info[p.productId] = productInfo;
+			product_prices[p.productId] = price;
 		}
 
-		if (p.isLong && price <= liquidationPrice || !p.isLong && price >= liquidationPrice) {
+		// Calculate liq price for each position
+
+		let product_price_with_fee;
+		let fee = product_info[p.productId]['fee'];
+		if (p.isLong) {
+			product_price_with_fee = product_prices[p.productId] * (1 - fee/10000);
+		} else {
+			product_price_with_fee = product_prices[p.productId] * (1 + fee/10000);
+		}
+
+		let position_price = p.price.toNumber();
+
+		console.log('product_price_with_fee', product_price_with_fee);
+		console.log('position price', position_price);
+
+		let liquidationPrice;
+		if (p.isLong) {
+			liquidationPrice = position_price - position_price * 0.8 / (p.leverage / 10**8);
+		} else {
+			liquidationPrice = position_price + position_price * 0.8 / (p.leverage / 10**8);
+		}
+
+		console.log('liquidationPrice', liquidationPrice);
+		console.log('-------')
+
+		if (p.isLong && product_price_with_fee <= liquidationPrice || !p.isLong && product_price_with_fee >= liquidationPrice) {
 			// Can be liquidated
-			liquidate_position_ids.push(p.positionId);
+			liquidate_position_ids.push(positionId);
 		}
 
 	}
 
+	console.log('liquidate_position_ids', liquidate_position_ids)
+
 	if (liquidate_position_ids.length > 0) {
-		await liquidatePositions(liquidate_position_ids);
+		await contract.liquidatePositions(liquidate_position_ids);
 	}
 
 	return returnRes(res, 200, {success: true, liquidate_position_ids}, req.query.isLocal);
