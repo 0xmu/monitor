@@ -31,7 +31,7 @@ async function main(req, res) {
 
 	// LOCAL TEST
 
-	//await contract.liquidatePositions([ '3', '4', '13', '18' ], {gasLimit: 2000000});
+	//await contract.liquidatePositions([ '2' ], {gasLimit: 2000000});
 	//return;
 
 	// determine which positions to liquidate
@@ -43,7 +43,7 @@ async function main(req, res) {
 	// calculate liquidation price for each of these positions and determine if they can be liquidated
 
 	// full close
-	const filter_close = contract.filters.ClosePosition(null, null, 1);
+	const filter_close = contract.filters.ClosePosition(null, null, null, 1);
 	const events_close = await contract.queryFilter(filter_close, -1000000);
 
 	//console.log('events_close', events_close);
@@ -145,7 +145,7 @@ async function main(req, res) {
 
 	}
 
-	console.log('liquidate_position_ids', liquidate_position_ids)
+	console.log('liquidate_position_ids', liquidate_position_ids);
 
 	if (liquidate_position_ids.length > 0) {
 		await contract.liquidatePositions(liquidate_position_ids);

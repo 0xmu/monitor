@@ -22,6 +22,8 @@ async function main(req, res) {
 
 	const trading = process.env[`TRADING_CONTRACT_${chain.toUpperCase()}`];
 
+	console.log('trading', trading);
+	
 	if (!trading) return returnRes(res, 403, {success: false, message: 'no trading contract'}, req.query.isLocal);
 
 	const provider = new ethers.providers.JsonRpcProvider(DATA[chain]['network']);
@@ -33,7 +35,9 @@ async function main(req, res) {
 	// determine which IDs to settle based on recent NewPosition events
 
 	const filter_settled = contract.filters.NewPositionSettled();
-	const events_settled = await contract.queryFilter(filter_settled, -1000);
+	const events_settled = await contract.queryFilter(filter_settled, -10000);
+
+	console.log('events_settled', events_settled);
 
 	let already_settled = {};
 	for (let ev of events_settled) {
@@ -42,7 +46,9 @@ async function main(req, res) {
 	}
 
 	const filter_new = contract.filters.NewPosition();
-	const events_new = await contract.queryFilter(filter_new, -1000);
+	const events_new = await contract.queryFilter(filter_new, -10000);
+		
+	console.log('events_new', events_new);
 
 	let settle_these_ids = {};
 	for (let ev of events_new) {
