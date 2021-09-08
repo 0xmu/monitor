@@ -44,7 +44,7 @@ async function main(req, res) {
 
 	// full close
 	const filter_close = contract.filters.ClosePosition(null, null, null, 1);
-	const events_close = await contract.queryFilter(filter_close, -1000000);
+	const events_close = await contract.queryFilter(filter_close, -80000);
 
 	//console.log('events_close', events_close);
 
@@ -55,7 +55,7 @@ async function main(req, res) {
 	}
 
 	const filter_settled = contract.filters.NewPositionSettled();
-	const events_settled = await contract.queryFilter(filter_settled, -1000000); // about 6 months
+	const events_settled = await contract.queryFilter(filter_settled, -80000); // about 6 months
 
 	//console.log('events_settled', events_settled);
 
