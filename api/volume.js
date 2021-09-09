@@ -17,7 +17,7 @@ function returnRes(res, status, obj, isLocal) {
 		'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
 	);
 
-	res.setHeader('Cache-Control', 's-maxage=1800');
+	res.setHeader('Cache-Control', 's-maxage=300');
 	res.status(status).json(obj);
 }
 
