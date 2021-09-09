@@ -16,16 +16,17 @@ function returnRes(res, status, obj, isLocal) {
 		'Access-Control-Allow-Headers',
 		'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
 	);
-	if (req.method === 'OPTIONS') {
-		res.status(200).end();
-		return;
-	}
 
 	res.setHeader('Cache-Control', 's-maxage=1800');
 	res.status(status).json(obj);
 }
 
 async function main(req, res) {
+
+	if (req && req.method === 'OPTIONS') {
+		res.status(200).end();
+		return;
+	}
 
 	const chain = req.query.chain; // rinkeby, mainnet, etc.
 
