@@ -108,7 +108,7 @@ async function main(req, res) {
 
 	// close
 	const filter_close = contract.filters.ClosePosition();
-	const events_close = await contract.queryFilter(filter_close, -150000);
+	const events_close = await contract.queryFilter(filter_close, -99000);
 
 	//console.log('events_close', events_close);
 
@@ -127,7 +127,7 @@ async function main(req, res) {
 	//console.log('closed_positions', closed_positions);
 
 	const filter_new = contract.filters.NewPosition();
-	const events_new = await contract.queryFilter(filter_new, -150000);
+	const events_new = await contract.queryFilter(filter_new, -99000);
 
 	//console.log('events_settled', events_settled);
 
