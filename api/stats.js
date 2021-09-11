@@ -55,7 +55,6 @@ function formatNewPosition(p, positionId) {
 		product: ID_TO_PRODUCT[p.productId],
 		//productId: p.productId,
 		isLong: p.isLong ? '⬆' : '⬇',
-		isSettling: p.isSettling ? '•' : '',
 		margin: formatToDisplay(formatUnits(p.margin)) * 1,
 		leverage: formatToDisplay(formatUnits(p.leverage)),
 		amount: formatToDisplay(formatUnits(p.margin) * formatUnits(p.leverage)) * 1,
@@ -63,9 +62,10 @@ function formatNewPosition(p, positionId) {
 		productPrice: formatToDisplay(formatUnits(p.productPrice)) * 1,
 		upl: formatToDisplay(p.upl) * 1,
 		interest: formatToDisplay(p.interest || 0) * 1,
-		liquidationPrice: formatToDisplay(formatUnits(p.liquidationPrice)),
+		liquidationPrice: formatToDisplay(formatUnits(p.liquidationPrice)) * 1,
 		timestamp: new Date(p.timestamp * 1000).toLocaleString(),
-		owner: p.owner
+		owner: p.owner,
+		isSettling: p.isSettling ? '•' : '',
 	};
 }
 
@@ -108,7 +108,7 @@ async function main(req, res) {
 
 	// close
 	const filter_close = contract.filters.ClosePosition();
-	const events_close = await contract.queryFilter(filter_close, -80000);
+	const events_close = await contract.queryFilter(filter_close, -150000);
 
 	//console.log('events_close', events_close);
 
@@ -127,7 +127,7 @@ async function main(req, res) {
 	//console.log('closed_positions', closed_positions);
 
 	const filter_new = contract.filters.NewPosition();
-	const events_new = await contract.queryFilter(filter_new, -80000);
+	const events_new = await contract.queryFilter(filter_new, -150000);
 
 	//console.log('events_settled', events_settled);
 
