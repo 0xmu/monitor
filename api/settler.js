@@ -23,7 +23,7 @@ export default async function main(req, res) {
 		
 			if (idsToActuallySettle.length > 0) {
 				await contract.settlePositions(idsToActuallySettle);
-				return wrapRes(req, res, 200, {success: true, settled: idsToActuallySettle});	
+				return wrapRes(req, res, 200, {success: true, settled: idsToActuallySettle});
 			}
 		
 		}
