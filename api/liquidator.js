@@ -7,6 +7,9 @@ export default async function main(req, res) {
 	const contract = initContract(true);
 	if (!contract) return wrapRes(req, res, 403, {error: 'Contract null.'});
 
+	//await contract.liquidatePositions(['884', '865', '871', '859']);
+	//return
+
 	// get product prices
 	// get position IDs to liquidate for each product
 	let liquidate_position_ids = [];
@@ -20,7 +23,7 @@ export default async function main(req, res) {
 		liquidate_position_ids = liquidate_position_ids.concat(ids_long).concat(ids_short);
 	}
 
-	//console.log('liquidate_position_ids', liquidate_position_ids);
+	console.log('liquidate_position_ids', liquidate_position_ids);
 
 	if (liquidate_position_ids.length > 0) {
 		await contract.liquidatePositions(liquidate_position_ids);

@@ -51,8 +51,10 @@ export default async function main(req, res) {
 			if (latestPrice) {
 			
 				if (p.isLong) {
+					latestPrice = latestPrice * (1 - product_info[p.productId].fee/10000);
 					upl = p.margin * p.leverage * (latestPrice * 1 - p.price * 1) / p.price;
 				} else {
+					latestPrice = latestPrice * (1 + product_info[p.productId].fee/10000);
 					upl = p.margin * p.leverage * (p.price * 1 - latestPrice * 1) / p.price;
 				}
 
@@ -71,6 +73,8 @@ export default async function main(req, res) {
 				upl -= interest;
 
 			}
+
+			p.canBeLiquidated = p.isLong && p.liquidationPrice*1 > latestPrice*1 || !p.isLong && p.liquidationPrice*1 < latestPrice*1;
 
 			p.upl = formatToDisplay(upl) * 1;
 			p.productPrice = formatToDisplay(latestPrice) * 1;
