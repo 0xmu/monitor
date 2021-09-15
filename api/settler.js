@@ -6,6 +6,9 @@ export default async function main(req, res) {
 	const contract = initContract(true);
 	if (!contract) return wrapRes(req, res, 403, {error: 'Contract null.'});
 
+	//await contract.settlePositions(['']);
+	//return;
+
 	const ids = await getSettlingPositionIDs();
 
 	if (ids.length > 0) {
