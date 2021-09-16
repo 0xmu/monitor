@@ -9,7 +9,7 @@ export default async function main(req, res) {
 	const contract = initContract(true);
 	if (!contract) return wrapRes(req, res, 403, {error: 'Contract null.'});
 
-	//await contract.liquidatePositions(['']);
+	//await contract.liquidatePositions(['1258']);
 	//return
 
 	// get product info for fees
@@ -22,15 +22,15 @@ export default async function main(req, res) {
 			product_info[id] = await contract.getProduct(id);
 		}
 
-		const price = await contract.getLatestPrice(ADDRESS_ZERO, id);
-		console.log('price', id, price);
-
 		const fee = product_info[id].fee;
 
-		const ids_long = await getPositionIDsToLiquidate(id, price * (1 - 0.75*fee/10000), true);
+		const price = await contract.getLatestPrice(ADDRESS_ZERO, id);
+		//console.log('price', id, price.toNumber(), price * (1 + 0.75*fee/10000));
+
+		const ids_long = await getPositionIDsToLiquidate(id, price * (1 - 1.1*fee/10000), true);
 		console.log('ids_long', ids_long);
 		
-		const ids_short = await getPositionIDsToLiquidate(id, price * (1 + 1.25*fee/10000), false);
+		const ids_short = await getPositionIDsToLiquidate(id, price * (1 + 0.9*fee/10000), false);
 		console.log('ids_short', ids_short);
 		
 		liquidate_position_ids = liquidate_position_ids.concat(ids_long).concat(ids_short);
