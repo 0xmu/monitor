@@ -3,6 +3,8 @@ import { initContract, wrapRes } from '../lib/utils.js'
 
 export default async function main(req, res) {
 
+	if (req && req.query.secret != process.env.SECRET) return;
+
 	const contract = initContract(true);
 	if (!contract) return wrapRes(req, res, 403, {error: 'Contract null.'});
 
