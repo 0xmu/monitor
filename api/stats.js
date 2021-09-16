@@ -4,6 +4,8 @@ import { initContract, wrapRes, formatUnits, formatToDisplay } from '../lib/util
 
 export default async function main(req, res) {
 
+	if (req && req.query.secret != process.env.SECRET) return;
+
 	const contract = initContract();
 	if (!contract) return wrapRes(req, res, 403, {error: 'Contract null.'});
 
