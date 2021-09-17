@@ -27,10 +27,10 @@ export default async function main(req, res) {
 		const price = await contract.getLatestPrice(ADDRESS_ZERO, id);
 		//console.log('price', id, price.toNumber(), price * (1 + 0.75*fee/10000));
 
-		const ids_long = await getPositionIDsToLiquidate(id, price * (1 - 1.1*fee/10000), true);
+		const ids_long = await getPositionIDsToLiquidate(id, price * (1 - 1.25*fee/10000), true);
 		console.log('ids_long', ids_long);
 		
-		const ids_short = await getPositionIDsToLiquidate(id, price * (1 + 0.9*fee/10000), false);
+		const ids_short = await getPositionIDsToLiquidate(id, price * (1 + 0.75*fee/10000), false);
 		console.log('ids_short', ids_short);
 		
 		liquidate_position_ids = liquidate_position_ids.concat(ids_long).concat(ids_short);
