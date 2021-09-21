@@ -11,12 +11,34 @@ export default async function main(req, res) {
 	//await contract.settlePositions(['']);
 	//return;
 
-	const ids = await getSettlingPositionIDs();
+	let ids = await getSettlingPositionIDs();
 
-	if (ids.length > 0) {
+	/*** Graph issues, get from events */
+	const filter_new = contract.filters.NewPosition();
+	const _events_new = await contract.queryFilter(filter_new, -10000);
 
-		const canBeSettled = await contract.canSettlePositions(ids);
+	console.log('_events_new', _events_new);
+	let new_position_ids = {};
+	for (let ev of _events_new) {
+		let positionId = ev.args.positionId && ev.args.positionId.toNumber();
+		new_position_ids[positionId] = true;
+	}
+
+	let all_ids = ids.concat(Object.keys(new_position_ids));
+	// unique
+	all_ids = all_ids.filter((value, index, self) => {
+		return self.indexOf(value) === index;
+	});
+	/***/
+
+	console.log('all_ids', all_ids);
+
+	if (all_ids.length > 0) {
+
+		const canBeSettled = await contract.canSettlePositions(all_ids);
 		
+		console.log('canBeSettled', canBeSettled);
+
 		if (canBeSettled.length > 0) {
 		
 			// Go through it and make sure there are non zeros
