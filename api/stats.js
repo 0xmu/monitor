@@ -6,8 +6,8 @@ export default async function main(req, res) {
 
 	if (req && req.query.secret != process.env.SECRET) return;
 
-	const contract = initContract();
-	if (!contract) return wrapRes(req, res, 403, {error: 'Contract null.'});
+	const { trading, treasury, provider } = initContract();
+	if (!trading || !treasury) return wrapRes(req, res, 403, {error: 'Contracts null.'});
 
 	// get positions
 	let positions = {
@@ -38,8 +38,8 @@ export default async function main(req, res) {
 			if (!p.productId) continue;
 
 			if (!product_prices[p.productId]) {
-				let productInfo = await contract.getProduct(p.productId);
-				let price = await contract.getLatestPrice(ADDRESS_ZERO, p.productId);
+				let productInfo = await trading.getProduct(p.productId);
+				let price = await trading.getChainlinkPrice(p.productId);
 				product_info[p.productId] = productInfo;
 				product_prices[p.productId] = price.toNumber();
 			}
@@ -63,7 +63,7 @@ export default async function main(req, res) {
 				// Add interest
 				let now = parseInt(Date.now() / 1000);
 
-				if (p.isSettling || now < p.timestamp * 1 + 1800) {
+				if (now < p.timestamp * 1 + 1800) {
 					//console.log('i1');
 					interest = 0;
 				} else {
@@ -102,7 +102,14 @@ export default async function main(req, res) {
 	// get trades
 	const trades = await getTrades();
 
+	// treasury
+	const vaultBalance = formatUnits(await treasury.vaultBalance(), 18);
+	const vaultThreshold = formatUnits(await treasury.vaultThreshold(), 18);
+	const treasuryBalance = formatUnits(await provider.getBalance(treasury.address), 18);
+
 	// Display in terminal
+
+	console.log('Treasury Balance: ' + treasuryBalance + ' | Vault Balance: ' + vaultBalance + ' | Vault Threshold: ' + vaultThreshold);
 
 	console.log("Open Positions sorted by Amount");
 	console.log("Total UPL: " + formatToDisplay(total_upl.amount) + " | Total Margin: ", formatToDisplay(total_margin.amount) + " | Positions: " + positions.amount.length + " |  Unique Wallets: " + Object.keys(unique_owners.amount).length);
