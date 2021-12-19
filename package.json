@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "console-table-printer": "^2.10.0",
     "dotenv": "^10.0.0",
     "ethers": "^5.4.6",
     "node-fetch": "^3.0.0"
