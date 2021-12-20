@@ -97,12 +97,14 @@ export default async function main(req, res) {
 			p.createdAtTimestamp = new Date(p.createdAtTimestamp * 1000).toLocaleString();
 			p.updatedAtTimestamp = new Date(p.updatedAtTimestamp * 1000).toLocaleString();
 
-			total_margin[currency] += p.margin * 1;
-			total_upl[currency] += upl;
-			if (p.isLong) {
-				longs[currency] += p.size * 1;
-			} else {
-				shorts[currency] += p.size * 1;
+			if (type == 'size') {
+				total_margin[currency] += p.margin * 1;
+				total_upl[currency] += upl;
+				if (p.isLong) {
+					longs[currency] += p.size * 1;
+				} else {
+					shorts[currency] += p.size * 1;
+				}
 			}
 
 			p.margin = `${p.margin} ${currency}`;
