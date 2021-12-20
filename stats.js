@@ -1,14 +1,13 @@
 import { getPositions, getTrades, getPrice } from './lib/api.js'
 import { ADDRESS_ZERO } from './lib/constants.js'
-import { initContract, wrapRes, formatUnits, formatToDisplay } from './lib/utils.js'
+import { initContract, formatUnits, formatToDisplay } from './lib/utils.js'
 import { Table } from 'console-table-printer'
 
-export default async function main(req, res) {
+export default async function main() {
 
-	if (req && req.query.secret != process.env.SECRET) return;
+	const { trading } = initContract();
 
-	const { trading, treasury, provider } = initContract();
-	if (!trading || !treasury) return wrapRes(req, res, 403, {error: 'Contracts null.'});
+	if (!trading) return console.log('TRADING_CONTRACT null.');
 
 	// get positions
 	let positions = {
@@ -134,14 +133,7 @@ export default async function main(req, res) {
 	// get trades
 	const trades = await getTrades();
 
-	// // treasury
-	// const vaultBalance = formatUnits(await treasury.vaultBalance(), 18);
-	// const vaultThreshold = formatUnits(await treasury.vaultThreshold(), 18);
-	// const treasuryBalance = formatUnits(await provider.getBalance(treasury.address), 18);
-
 	// Display in terminal
-
-	// console.log('Treasury Balance: ' + treasuryBalance + ' | Vault Balance: ' + vaultBalance + ' | Vault Threshold: ' + vaultThreshold);
 
 	const p = new Table({
 	  columns: [
@@ -191,8 +183,6 @@ export default async function main(req, res) {
 
 	console.log("Positions sorted by Last Updated");
 	p2.printTable();
-
-	// console.table(positions.recent);
 
 	const p3 = new Table({
 	  columns: [
