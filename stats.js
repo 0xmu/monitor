@@ -150,11 +150,14 @@ export default async function main() {
 
 		let currency = trade.currency == ADDRESS_ZERO ? 'ETH' : 'USDC';
 
-		volume[currency] += trade.size * 1;
+		if (trade.timestamp * 1000 >= Date.now() - 24 * 3600 * 1000) {
+			volume[currency] += trade.size * 1;
+		}
 
 		trade.margin = `${trade.margin} ${currency}`;
 		trade.size = `${trade.size} ${currency}`;
 		trade.pnl = `${trade.pnl} ${currency}`;
+		trade.timestamp = new Date(trade.timestamp * 1000).toLocaleString();
 
 		let direction = trade.isLong == true ? '↑' : '↓';
 
