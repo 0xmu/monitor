@@ -28,6 +28,14 @@ export default async function main(req, res) {
 		ETH: 0,
 		USDC: 0
 	};
+	let longs = {
+		ETH: 0,
+		USDC: 0
+	};
+	let shorts = {
+		ETH: 0,
+		USDC: 0
+	};
 	let unique_owners = {};
 
 	const augmentPositions = async (type) => {
@@ -91,6 +99,11 @@ export default async function main(req, res) {
 
 			total_margin[currency] += p.margin * 1;
 			total_upl[currency] += upl;
+			if (p.isLong) {
+				longs[currency] += p.size * 1;
+			} else {
+				shorts[currency] += p.size * 1;
+			}
 
 			p.margin = `${p.margin} ${currency}`;
 			p.size = `${p.size} ${currency}`;
@@ -150,6 +163,7 @@ export default async function main(req, res) {
 
 	console.log("Open Positions sorted by Size");
 	console.log("Total UPL: " + formatToDisplay(total_upl.ETH) + " ETH, " + formatToDisplay(total_upl.USDC) + " USDC | Total Margin: ", formatToDisplay(total_margin.ETH) + " ETH, " + formatToDisplay(total_margin.USDC) + " USDC | Positions: " + positions.size.length + " |  Unique Wallets: " + Object.keys(unique_owners).length);
+	console.log("Longs: " + formatToDisplay(longs.ETH) + " ETH, " + formatToDisplay(longs.USDC) + " USDC | Shorts: ", formatToDisplay(shorts.ETH) + " ETH, " + formatToDisplay(shorts.USDC) + " USDC");
 	// console.table(positions.size);
 	p.printTable();
 
