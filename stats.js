@@ -35,6 +35,10 @@ export default async function main() {
 		ETH: 0,
 		USDC: 0
 	};
+	let volume = {
+		ETH: 0,
+		USDC: 0
+	};
 	let unique_owners = {};
 
 	const augmentPositions = async (type) => {
@@ -93,10 +97,13 @@ export default async function main() {
 			p.productPrice = formatToDisplay(latestPrice) * 1;
 			if (interest) p.interest = formatToDisplay(-1 * interest) * 1 || 0;
 
-			p.createdAtTimestamp = new Date(p.createdAtTimestamp * 1000).toLocaleString();
-			p.updatedAtTimestamp = new Date(p.updatedAtTimestamp * 1000).toLocaleString();
-
 			if (type == 'size') {
+
+				if (p.updatedAtTimestamp * 1000 >= Date.now() - 24 * 3600 * 1000) {
+					// volume since 24 hours
+					volume[currency] += p.size * 1;
+				}
+
 				total_margin[currency] += p.margin * 1;
 				total_upl[currency] += upl;
 				if (p.isLong) {
@@ -104,7 +111,11 @@ export default async function main() {
 				} else {
 					shorts[currency] += p.size * 1;
 				}
+
 			}
+
+			p.createdAtTimestamp = new Date(p.createdAtTimestamp * 1000).toLocaleString();
+			p.updatedAtTimestamp = new Date(p.updatedAtTimestamp * 1000).toLocaleString();
 
 			p.margin = `${p.margin} ${currency}`;
 			p.size = `${p.size} ${currency}`;
@@ -131,7 +142,43 @@ export default async function main() {
 	await augmentPositions('size');
 
 	// get trades
-	const trades = await getTrades();
+	const _trades = await getTrades();
+
+	let trades = [];
+
+	for (let trade of _trades) {
+
+		let currency = trade.currency == ADDRESS_ZERO ? 'ETH' : 'USDC';
+
+		volume[currency] += trade.size * 1;
+
+		trade.margin = `${trade.margin} ${currency}`;
+		trade.size = `${trade.size} ${currency}`;
+		trade.pnl = `${trade.pnl} ${currency}`;
+
+		let direction = trade.isLong == true ? '↑' : '↓';
+
+		trade.product = `${direction} ${trade.product}`;
+
+		delete trade.isLong;
+		delete trade.currency;
+
+		let duration;
+		if (trade.duration < 60) {
+			duration = trade.duration + 's';
+		} else if (trade.duration < 3600) {
+			duration = parseInt(trade.duration / 60) + 'm' + parseInt(trade.duration % 60) + 's';
+		} else {
+			duration = parseInt(trade.duration / 3600) + 'h' + parseInt((trade.duration % 3600)/60) + 'm';
+		}
+
+		trade.duration = duration;
+
+		trade.wasLiquidated = trade.wasLiquidated ? 'Y' : '';
+
+		trades.push(trade);
+
+	}
 
 	// Display in terminal
 
@@ -158,7 +205,8 @@ export default async function main() {
 	console.log("Positions sorted by Size");
 	console.log("Total UPL: " + formatToDisplay(total_upl.ETH) + " ETH, " + formatToDisplay(total_upl.USDC) + " USDC | Total Margin: ", formatToDisplay(total_margin.ETH) + " ETH, " + formatToDisplay(total_margin.USDC) + " USDC | Positions: " + positions.size.length + " |  Unique Wallets: " + Object.keys(unique_owners).length);
 	console.log("Longs: " + formatToDisplay(longs.ETH) + " ETH, " + formatToDisplay(longs.USDC) + " USDC | Shorts: ", formatToDisplay(shorts.ETH) + " ETH, " + formatToDisplay(shorts.USDC) + " USDC");
-	// console.table(positions.size);
+	console.log("Daily Volume: " + formatToDisplay(volume.ETH) + " ETH, " + formatToDisplay(volume.USDC) + " USDC");
+
 	p.printTable();
 
 	const p2 = new Table({
@@ -186,7 +234,6 @@ export default async function main() {
 
 	const p3 = new Table({
 	  columns: [
-	    { name: 'isLong', title: 'Direction', color: 'green' },
 	    { name: 'product', title: 'Product', color: 'green' },
 	    { name: 'entryPrice', title: 'Entry Price', color: 'yellow' },
 	    { name: 'closePrice', title: 'Close Price', color: 'yellow' },
@@ -197,8 +244,7 @@ export default async function main() {
 	    { name: 'duration', title: 'Duration', color: 'yellow' },
 	    { name: 'timestamp', title: 'Closed At', color: 'green' },
 	    { name: 'user', title: 'User', color: 'green' },
-	    { name: 'wasLiquidated', title: 'Was Liq.', color: 'green' },
-	    { name: 'currency', title: 'Currency', color: 'green' }
+	    { name: 'wasLiquidated', title: 'Was Liq.', color: 'green' }
 	  ],
 	});
 
