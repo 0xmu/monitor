@@ -1,6 +1,6 @@
-import { getPositions, getTrades, getPrice } from '../lib/api.js'
-import { ADDRESS_ZERO } from '../lib/constants.js'
-import { initContract, wrapRes, formatUnits, formatToDisplay } from '../lib/utils.js'
+import { getPositions, getTrades, getPrice } from './lib/api.js'
+import { ADDRESS_ZERO } from './lib/constants.js'
+import { initContract, wrapRes, formatUnits, formatToDisplay } from './lib/utils.js'
 import { Table } from 'console-table-printer'
 
 export default async function main(req, res) {
@@ -161,7 +161,7 @@ export default async function main(req, res) {
 
 	p.addRows(positions.size);
 
-	console.log("Open Positions sorted by Size");
+	console.log("Positions sorted by Size");
 	console.log("Total UPL: " + formatToDisplay(total_upl.ETH) + " ETH, " + formatToDisplay(total_upl.USDC) + " USDC | Total Margin: ", formatToDisplay(total_margin.ETH) + " ETH, " + formatToDisplay(total_margin.USDC) + " USDC | Positions: " + positions.size.length + " |  Unique Wallets: " + Object.keys(unique_owners).length);
 	console.log("Longs: " + formatToDisplay(longs.ETH) + " ETH, " + formatToDisplay(longs.USDC) + " USDC | Shorts: ", formatToDisplay(shorts.ETH) + " ETH, " + formatToDisplay(shorts.USDC) + " USDC");
 	// console.table(positions.size);
@@ -187,7 +187,7 @@ export default async function main(req, res) {
 
 	p2.addRows(positions.recent);
 
-	console.log("Recent Positions");
+	console.log("Positions sorted by Last Updated");
 	p2.printTable();
 
 	// console.table(positions.recent);
@@ -212,7 +212,9 @@ export default async function main(req, res) {
 
 	p3.addRows(trades);
 
-	console.log("Trades");
+	console.log("Closed Trades");
 	p3.printTable();
 
 }
+
+main();
